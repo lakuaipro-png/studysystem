@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System: Aura</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Solo Leveling Violet/Purple Theme */
+      --bg-color: #030008;
+      --panel-bg: rgba(15, 5, 25, 0.85);
+      --accent: #B026FF; /* Electric Violet */
+      --accent-dark: #5A189A;
+      --accent-glow: rgba(176, 38, 255, 0.6);
+      --text-main: #E2D5F8;
+      --text-muted: #9D8BB0;
+      --success: #00FF66;
+      --danger: #FF003C;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Orbitron', monospace;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(176, 38, 255, 0.1) 0%, transparent 70%),
+        linear-gradient(0deg, rgba(3, 0, 8, 1) 0%, rgba(10, 2, 15, 0.9) 100%);
+      overflow-x: hidden;
+    }
+
+    /* Scanline effect */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .system-container {
+      width: 100%;
+      max-width: 650px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: bootUp 1.2s cubic-bezier(0.1, 0.8, 0.1, 1) forwards;
+      position: relative;
+      z-index: 10;
+    }
+
+    @keyframes bootUp {
+      0% { opacity: 0; transform: translateY(30px) scale(0.95); filter: blur(10px); }
+      50% { filter: blur(2px); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+
+    .system-header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .system-header h1 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent), 0 0 40px var(--accent-dark);
+      letter-spacing: 5px;
+      margin-bottom: 20px;
+      border-bottom: none;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      border-bottom: 2px solid rgba(176, 38, 255, 0.2);
+      padding-bottom: 5px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: 'Orbitron', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+      text-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      text-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .tab-btn.active::after {
+      transform: scaleX(1);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeInTab 0.4s ease-out;
+    }
+
+    .tab-content.active {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    @keyframes fadeInTab {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel {
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(176, 38, 255, 0.3);
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(176, 38, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.8;
+    }
+
+    h2, h3 {
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 8px var(--accent-glow);
+      margin-bottom: 20px;
+    }
+
+    h2 { 
+      font-size: 1.3rem; 
+      border-bottom: 1px solid rgba(176, 38, 255, 0.3); 
+      padding-bottom: 10px; 
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2::before {
+      content: '>';
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    label {
+      font-size: 0.75rem;
+      color: var(--accent);
+      margin-bottom: 8px;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+    }
+
+    input {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(176, 38, 255, 0.2);
+      color: #fff;
+      font-family: 'Orbitron', monospace;
+      padding: 12px 15px;
+      border-radius: 4px;
+      outline: none;
+      transition: all 0.3s;
+      font-size: 1rem;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(176, 38, 255, 0.3);
+      background: rgba(176, 38, 255, 0.05);
+    }
+
+    /* Skill Inventory */
+    .skill-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    .skill-item {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr 60px 40px;
+      gap: 10px;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 12px;
+      border-left: 4px solid var(--accent);
+      border-radius: 4px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .skill-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 0 15px rgba(176, 38, 255, 0.15);
+      background: rgba(176, 38, 255, 0.05);
+    }
+
+    .skill-item input {
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .btn-delete {
+      background: rgba(255, 0, 60, 0.1);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      width: 100%;
+      height: 100%;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-family: inherit;
+      font-weight: bold;
+    }
+
+    .btn-delete:hover {
+      background: var(--danger);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(255, 0, 60, 0.6);
+    }
+
+    .awaken-skill {
+      background: rgba(176, 38, 255, 0.03);
+      padding: 20px;
+      border: 1px dashed rgba(176, 38, 255, 0.5);
+      border-radius: 8px;
+    }
+
+    /* Quest Log */
+    .quest-card {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(176, 38, 255, 0.3);
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      position: relative;
+      transition: all 0.3s;
+    }
+    .quest-card.completed {
+      border-color: var(--success);
+      background: rgba(0, 255, 102, 0.05);
+    }
+    .quest-card.failed {
+      border-color: var(--danger);
+      background: rgba(255, 0, 60, 0.05);
+    }
+    .quest-title {
+      font-size: 1.2rem;
+      color: #fff;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-shadow: 0 0 5px rgba(255,255,255,0.3);
+    }
+    .quest-detail {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .quest-detail span.reward { color: var(--accent); font-weight: bold; }
+    .quest-detail span.penalty { color: var(--danger); font-weight: bold; }
+    
+    .quest-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .btn-quest {
+      flex: 1;
+      padding: 10px;
+      font-family: 'Orbitron', monospace;
+      cursor: pointer;
+      border-radius: 2px;
+      text-transform: uppercase;
+      font-weight: bold;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+      letter-spacing: 1px;
+    }
+    .btn-complete {
+      background: rgba(0, 255, 102, 0.1);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+    .btn-complete:hover {
+      background: var(--success);
+      color: #000;
+      box-shadow: 0 0 15px rgba(0, 255, 102, 0.4);
+    }
+    .btn-fail {
+      background: rgba(255, 0, 60, 0.1);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+    .btn-fail:hover {
+      background: var(--danger);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(255, 0, 60, 0.4);
+    }
+    .quest-status-label {
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 1rem;
+      margin-top: 10px;
+      display: block;
+      text-align: center;
+      letter-spacing: 2px;
+      padding: 5px;
+      border: 1px dashed;
+    }
+    .status-completed { color: var(--success); border-color: var(--success); }
+    .status-failed { color: var(--danger); border-color: var(--danger); }
+
+    .btn {
+      background: rgba(176, 38, 255, 0.1);
+      border: 1px solid var(--accent);
+      color: #fff;
+      font-family: 'Orbitron', monospace;
+      text-transform: uppercase;
+      padding: 15px 20px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: all 0.3s;
+      width: 100%;
+      font-weight: 700;
+      border-radius: 4px;
+      text-shadow: 0 0 5px var(--accent-glow);
+    }
+
+    .btn:hover {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 20px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-sync {
+      font-size: 1.3rem;
+      padding: 20px;
+      margin-top: 10px;
+      border-width: 2px;
+      background: rgba(176, 38, 255, 0.15);
+      letter-spacing: 4px;
+    }
+
+    .btn-sync.success {
+      border-color: var(--success);
+      color: #fff;
+      background: rgba(0, 255, 102, 0.2);
+      text-shadow: 0 0 10px rgba(0, 255, 102, 0.8);
+      box-shadow: 0 0 30px rgba(0, 255, 102, 0.4), inset 0 0 20px rgba(0, 255, 102, 0.2);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; gap: 15px; }
+      .skill-item {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 10px;
+      }
+      .skill-item input[data-field="category"] { grid-column: 1 / 2; }
+      .skill-item input[data-field="name"] { grid-column: 2 / 3; }
+      .skill-item input[data-field="rank"] { grid-column: 1 / 2; }
+      .skill-item .btn-delete { grid-column: 2 / 3; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="system-container">
+    <div class="system-header">
+      <h1>SYSTEM</h1>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-status">STATUS</button>
+        <button class="tab-btn" data-tab="tab-skills">SKILLS</button>
+        <button class="tab-btn" data-tab="tab-quests">QUESTS</button>
+      </div>
+    </div>
+
+    <!-- TAB: STATUS -->
+    <div id="tab-status" class="tab-content active">
+      <!-- Section A: Profile -->
+      <div class="panel" id="section-profile">
+        <h2>Player Profile</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>NAME</label>
+            <input type="text" id="profile-name" placeholder="Enter Name">
+          </div>
+          <div class="form-group">
+            <label>TITLE</label>
+            <input type="text" id="profile-title" placeholder="e.g. Shadow Monarch">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>CLASS</label>
+            <input type="text" id="profile-class" value="Firmware Intern">
+          </div>
+          <div class="form-group">
+            <label>LEVEL</label>
+            <input type="number" id="profile-level" value="1" min="1">
+          </div>
+        </div>
+      </div>
+
+      <!-- Section B: Attributes -->
+      <div class="panel" id="section-attributes">
+        <h2>Core Attributes</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>STRENGTH (STR)</label>
+            <input type="number" id="attr-str" step="0.01" value="1.00">
+          </div>
+          <div class="form-group">
+            <label>INTELLIGENCE (INT)</label>
+            <input type="number" id="attr-int" step="0.01" value="1.00">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: SKILLS -->
+    <div id="tab-skills" class="tab-content">
+      <!-- Section C: Skills -->
+      <div class="panel" id="section-skills">
+        <h2>Skill Inventory</h2>
+        <div class="skill-list" id="skill-list-container">
+          <!-- Skills injected here -->
+        </div>
+
+        <div class="awaken-skill">
+          <h3 style="font-size: 1rem; margin-bottom: 15px; color: var(--accent);">[ AWAKEN NEW SKILL ]</h3>
+          <div class="form-row" style="margin-bottom: 15px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <input type="text" id="new-skill-cat" placeholder="Category (e.g. Firmware)">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <input type="text" id="new-skill-name" placeholder="Skill Name">
+            </div>
+          </div>
+          <div class="form-group">
+            <input type="text" id="new-skill-rank" placeholder="Rank (e.g. F, A, S)">
+          </div>
+          <button class="btn" id="btn-add-skill">AWAKEN</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: QUESTS -->
+    <div id="tab-quests" class="tab-content">
+      <div class="panel">
+        <h2>Quest Log</h2>
+        <div id="quest-list-container">
+          <!-- Quests injected here -->
+        </div>
+
+        <div class="awaken-skill" style="margin-top: 20px;">
+          <h3 style="font-size: 1rem; margin-bottom: 15px; color: var(--accent);">[ ISSUE NEW QUEST ]</h3>
+          <div class="form-group">
+            <input type="text" id="new-quest-name" placeholder="Quest Directive (e.g. Daily Prep: 100 Push-ups)">
+          </div>
+          <div class="form-row" style="margin-bottom: 15px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <input type="text" id="new-quest-reward" placeholder="Reward (e.g. +3 STR)">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <input type="text" id="new-quest-penalty" placeholder="Penalty (e.g. Penalty Zone)">
+            </div>
+          </div>
+          <button class="btn" id="btn-add-quest">ACCEPT QUEST</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section D: Sync -->
+    <button class="btn btn-sync" id="btn-sync">SYNC SYSTEM STATUS</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    // User's Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAw-O9ZGtTHtjcFzqak56QY9m3MZvqzLdk",
+      authDomain: "system-876bf.firebaseapp.com",
+      projectId: "system-876bf",
+      storageBucket: "system-876bf.firebasestorage.app",
+      messagingSenderId: "218438055058",
+      appId: "1:218438055058:web:2e483171444751c5d0224b"
+    };
+
+    // Initialize Firebase
+    let db;
+    try {
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+    } catch (e) {
+      console.warn("Firebase initialization failed.", e);
+    }
+
+    // Tab Switching Logic
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        // Remove active class from all buttons and contents
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        // Add active class to clicked button and corresponding content
+        e.target.classList.add('active');
+        const tabId = e.target.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+
+    // Default Skills State
+    let skills = [
+      { id: 's1', category: 'Firmware', name: 'Embedded C', rank: 'E' },
+      { id: 's2', category: 'Firmware', name: 'ARM Cortex-M', rank: 'E' },
+      { id: 's3', category: 'Hardware', name: 'KiCad', rank: 'F' },
+      { id: 's4', category: 'Hardware', name: 'RL78 MCU', rank: 'F' },
+      { id: 's5', category: 'Cognitive', name: 'Systems Thinking', rank: 'D' }
+    ];
+
+    // Default Quests State
+    let quests = [
+      { id: 'q1', name: 'Daily Prep: 100 Push-ups', reward: '+3 STR', penalty: 'Penalty Zone', status: 'active' }
+    ];
+
+    const skillListContainer = document.getElementById('skill-list-container');
+    const questListContainer = document.getElementById('quest-list-container');
+
+    // Render Skills
+    function renderSkills() {
+      skillListContainer.innerHTML = '';
+      skills.forEach(skill => {
+        const div = document.createElement('div');
+        div.className = 'skill-item';
+        div.innerHTML = `
+          <input type="text" value="${skill.category}" data-id="${skill.id}" data-field="category" placeholder="Category">
+          <input type="text" value="${skill.name}" data-id="${skill.id}" data-field="name" placeholder="Skill Name">
+          <input type="text" value="${skill.rank}" data-id="${skill.id}" data-field="rank" placeholder="Rank" style="text-align: center; font-weight: bold; color: var(--accent);">
+          <button class="btn-delete" data-id="${skill.id}" title="Erase Skill">✕</button>
+        `;
+        skillListContainer.appendChild(div);
+      });
+
+      // Attach event listeners for dynamic inputs
+      document.querySelectorAll('.skill-item input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const id = e.target.getAttribute('data-id');
+          const field = e.target.getAttribute('data-field');
+          const skill = skills.find(s => s.id === id);
+          if (skill) skill[field] = e.target.value;
+        });
+      });
+
+      // Attach event listeners for delete buttons
+      document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = e.target.getAttribute('data-id');
+          skills = skills.filter(s => s.id !== id);
+          renderSkills();
+        });
+      });
+    }
+
+    // Render Quests
+    function renderQuests() {
+      questListContainer.innerHTML = '';
+      
+      if (quests.length === 0) {
+        questListContainer.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 20px;">No active quests.</div>';
+        return;
+      }
+
+      quests.forEach(q => {
+        const div = document.createElement('div');
+        div.className = `quest-card ${q.status === 'completed' ? 'completed' : ''} ${q.status === 'failed' ? 'failed' : ''}`;
+        
+        let actionsHtml = '';
+        if (q.status === 'active') {
+          actionsHtml = `
+            <div class="quest-actions">
+              <button class="btn-quest btn-complete" data-id="${q.id}">COMPLETE</button>
+              <button class="btn-quest btn-fail" data-id="${q.id}">FAIL</button>
+            </div>
+          `;
+        } else {
+          actionsHtml = `<div class="quest-status-label ${q.status === 'completed' ? 'status-completed' : 'status-failed'}">[ ${q.status} ]</div>`;
+        }
+
+        div.innerHTML = `
+          <div class="quest-title">${q.name}</div>
+          <div class="quest-detail">Reward: <span class="reward">${q.reward}</span></div>
+          <div class="quest-detail">Penalty: <span class="penalty">${q.penalty}</span></div>
+          ${actionsHtml}
+        `;
+        questListContainer.appendChild(div);
+      });
+
+      // Attach listeners for Complete
+      document.querySelectorAll('.btn-complete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = e.target.getAttribute('data-id');
+          const q = quests.find(x => x.id === id);
+          if(q) q.status = 'completed';
+          renderQuests();
+        });
+      });
+
+      // Attach listeners for Fail
+      document.querySelectorAll('.btn-fail').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = e.target.getAttribute('data-id');
+          const q = quests.find(x => x.id === id);
+          if(q) q.status = 'failed';
+          renderQuests();
+        });
+      });
+    }
+
+    // Add Skill
+    document.getElementById('btn-add-skill').addEventListener('click', () => {
+      const catInput = document.getElementById('new-skill-cat');
+      const nameInput = document.getElementById('new-skill-name');
+      const rankInput = document.getElementById('new-skill-rank');
+
+      if (!nameInput.value) return alert("Skill Name is required to awaken.");
+
+      skills.push({
+        id: 'skill_' + Date.now(),
+        category: catInput.value || 'Unknown',
+        name: nameInput.value,
+        rank: rankInput.value || 'F-'
+      });
+
+      catInput.value = '';
+      nameInput.value = '';
+      rankInput.value = '';
+      renderSkills();
+    });
+
+    // Add Quest
+    document.getElementById('btn-add-quest').addEventListener('click', () => {
+      const nameInput = document.getElementById('new-quest-name');
+      const rewardInput = document.getElementById('new-quest-reward');
+      const penaltyInput = document.getElementById('new-quest-penalty');
+
+      if (!nameInput.value) return alert("Quest Directive is required.");
+
+      quests.push({
+        id: 'quest_' + Date.now(),
+        name: nameInput.value,
+        reward: rewardInput.value || 'None',
+        penalty: penaltyInput.value || 'None',
+        status: 'active'
+      });
+
+      nameInput.value = '';
+      rewardInput.value = '';
+      penaltyInput.value = '';
+      renderQuests();
+    });
+
+    // Load Data from Firestore
+    async function loadSystemData() {
+      if (!db) {
+        renderSkills();
+        renderQuests();
+        return;
+      }
+
+      try {
+        const docRef = doc(db, "users", "player1");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.profile) {
+            if (data.profile.name) document.getElementById('profile-name').value = data.profile.name;
+            if (data.profile.title) document.getElementById('profile-title').value = data.profile.title;
+            if (data.profile.class) document.getElementById('profile-class').value = data.profile.class;
+            if (data.profile.level) document.getElementById('profile-level').value = data.profile.level;
+          }
+          if (data.attributes) {
+            if (data.attributes.str) document.getElementById('attr-str').value = data.attributes.str;
+            if (data.attributes.int) document.getElementById('attr-int').value = data.attributes.int;
+          }
+          if (data.skills && Array.isArray(data.skills)) {
+            skills = data.skills;
+          }
+          if (data.quests && Array.isArray(data.quests)) {
+            quests = data.quests;
+          }
+        }
+      } catch (error) {
+        console.warn("Error loading system data:", error);
+      }
+      renderSkills();
+      renderQuests();
+    }
+
+    // Sync Data to Firestore
+    document.getElementById('btn-sync').addEventListener('click', async (e) => {
+      const btn = e.target;
+      const originalText = btn.innerText;
+      btn.innerText = "SYNCING...";
+
+      const systemData = {
+        profile: {
+          name: document.getElementById('profile-name').value,
+          title: document.getElementById('profile-title').value,
+          class: document.getElementById('profile-class').value,
+          level: Number(document.getElementById('profile-level').value)
+        },
+        attributes: {
+          str: Number(document.getElementById('attr-str').value),
+          int: Number(document.getElementById('attr-int').value)
+        },
+        skills: skills,
+        quests: quests
+      };
+
+      try {
+        if (db) {
+          const docRef = doc(db, "users", "player1");
+          await setDoc(docRef, systemData, { merge: true });
+        }
+
+        // UX Feedback
+        btn.innerText = "SYSTEM OVERRIDE COMPLETE";
+        btn.classList.add('success');
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.classList.remove('success');
+        }, 2000);
+
+      } catch (error) {
+        console.error("Sync failed:", error);
+        btn.innerText = "SYNC FAILED";
+        btn.style.borderColor = "var(--danger)";
+        btn.style.color = "var(--danger)";
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.style.borderColor = "";
+          btn.style.color = "";
+        }, 2000);
+      }
+    });
+
+    // Initialize
+    loadSystemData();
+
+  </script>
+</body>
+</html>
